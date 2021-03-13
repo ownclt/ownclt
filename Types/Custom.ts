@@ -1,4 +1,4 @@
-export interface OwnCtlConfig {
+export interface OwnCltConfig {
     command: string;
     args: string[];
     caller: string;

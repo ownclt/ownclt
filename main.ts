@@ -1,10 +1,7 @@
 import { log, logAndExit } from "./Functions/Loggers";
-import OwnCtl from "./OwnClt";
+import OwnClt from "./Classes/OwnClt";
 
 async function Main() {
-    // Log Start Messages
-    log("OwnCtl: Starting..");
-
     // Process Args
     const [, , ...commands] = process.argv;
 
@@ -16,15 +13,15 @@ async function Main() {
     // Get Command and Args
     const [command, ...args] = commands;
 
-    // Initialize new OwnCtl
-    const ownCtl = new OwnCtl({
-        command, // ownctl command
-        args, // Args of ownctl command
+    // Initialize new OwnClt
+    const ownClt = new OwnClt({
+        command, // ownclt command
+        args, // Args of ownclt command
         caller: __filename // Current file path
     });
 
-    // Boot OwnCtl
-    await ownCtl.start();
+    // Boot OwnClt
+    await ownClt.start();
 }
 
 Main().catch(console.log);
