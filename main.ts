@@ -1,4 +1,4 @@
-import { log, logAndExit } from "./Functions/Loggers";
+import { logInfoAndExit } from "./Functions/Loggers";
 import OwnClt from "./Classes/OwnClt";
 
 async function Main() {
@@ -7,7 +7,7 @@ async function Main() {
 
     // Check if commands has any command
     if (!commands || (commands && !commands.length)) {
-        return logAndExit("No command provided!");
+        return logInfoAndExit("No command provided!");
     }
 
     // Get Command and Args

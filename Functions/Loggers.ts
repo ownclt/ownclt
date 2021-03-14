@@ -1,3 +1,5 @@
+import { greenBright, blueBright, red, yellow } from "chalk";
+
 export function log(...args: any[]) {
     console.log(...args);
 }
@@ -7,8 +9,28 @@ export function logAndExit(...args: any[]) {
     process.exit();
 }
 
+export function logSuccess(message: any, error?: Error) {
+    log(greenBright("✔✔️"), greenBright(message));
+    if (error) console.log(error.stack);
+}
+
+export function logSuccessAndExit(message: any, error?: any) {
+    logSuccess(message, error);
+    process.exit();
+}
+
+export function logInfo(message: any, error?: Error) {
+    log(blueBright("🗣"), blueBright(message));
+    if (error) console.log(error.stack);
+}
+
+export function logInfoAndExit(message: any, error?: any) {
+    logInfo(message, error);
+    process.exit();
+}
+
 export function logError(message: any, error?: Error) {
-    log("Error:", message);
+    log(red("🚫"), red(message));
     if (error) console.log(error.stack);
 }
 
@@ -18,7 +40,7 @@ export function logErrorAndExit(message: any, error?: any) {
 }
 
 export function logWarning(message: any, error?: Error) {
-    log("!!", message);
+    log(yellow("!!"), yellow(message));
     if (error) console.log(error.stack);
 }
 
