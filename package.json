@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Own Command Line Tool",
   "main": "build/ownclt.js",
-  "repository": "https://githib.com/ownclt/ownclt",
+  "repository": "https://github.com/ownclt/ownclt",
   "author": "ownclit",
   "license": "MIT",
   "private": false,
