@@ -7,8 +7,8 @@ export = <OwnCltCommandsObject>{
      * @param args - Args received!
      * @param log - Log Functions
      */
-    link: ({ log }) => {
-        log.info(`clt clt/link was called!`);
+    link: ({ log, command }) => {
+        log.info(`${command} was called!`);
     },
 
     /**
@@ -17,7 +17,7 @@ export = <OwnCltCommandsObject>{
      * @param args - Args received!
      * @param log - Log Functions
      */
-    unlink: ({ log }) => {
-        log.info(`clt clt/unlink was called!`);
+    unlink: ({ log, command }) => {
+        log.info(`${command} was called!`);
     }
 };

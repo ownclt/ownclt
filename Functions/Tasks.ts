@@ -78,15 +78,16 @@ export function processCliQuery(self: OwnClt) {
         return log.warningAndExit(`Command "${command}" does not exists.`);
     }
 
-    /**
-     * Load Command Using data above.
-     */
-    loadCommandHandler(self, {
+    self.query = {
         args,
         command,
         subCommands,
         commandHandler
-    });
+    };
+    /**
+     * Load Command Using data above.
+     */
+    return self.query;
 }
 
 /**
@@ -94,16 +95,13 @@ export function processCliQuery(self: OwnClt) {
  * @param self
  * @param data
  */
-export function loadCommandHandler(
-    self: OwnClt,
-    data: {
-        args: string[];
-        command: string;
-        subCommands: string[];
-        commandHandler: string;
+export function loadCommandHandler(self: OwnClt) {
+    if (!self.query) {
+        throw new Error(
+            `No query in ownclt instance, call processCliQuery() first before loadCommandHandler()`
+        );
     }
-) {
-    const { commandHandler, subCommands } = data;
+    const { commandHandler, subCommands } = self.query;
 
     let handlerData: OwnCltCommandsObject = {};
 
@@ -120,8 +118,8 @@ export function loadCommandHandler(
         if (subCommands.length === 1 && typeof handlerData[subCommands[0]] === "function") {
             // Run handlers function
             handlerData[subCommands[0]]({
-                args: data.args,
-                command: data.command,
+                args: self.query.args,
+                command: self.query.command,
                 log
             });
         }

@@ -5,7 +5,7 @@
  */
 import { OwnCltConfig } from "../Types/Custom";
 import Path = require("path");
-import { installedOrInstall, processCliQuery } from "../Functions/Tasks";
+import { installedOrInstall, loadCommandHandler, processCliQuery } from "../Functions/Tasks";
 import OwnCltDatabase from "./OwnCltDatabase";
 
 class OwnClt {
@@ -18,6 +18,9 @@ class OwnClt {
     db: OwnCltDatabase;
     // Db Data Holder
     readonly #db: Record<string, any> = {};
+
+    // Query Holder
+    query?: { command: string; args: string[]; subCommands: string[]; commandHandler: string };
 
     constructor(config: OwnCltConfig) {
         // Trim command
@@ -44,6 +47,11 @@ class OwnClt {
          * Process command
          */
         processCliQuery(this);
+
+        /**
+         * Load Processed Command
+         */
+        loadCommandHandler(this);
     }
 
     /**
