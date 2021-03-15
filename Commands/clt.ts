@@ -1,20 +1,23 @@
-export = {
-    namespace: "clt",
-    separator: "/",
+import { OwnCltCommandsObject } from "../Types/Custom";
 
-    commands: {
-        link: {
-            desc: "Link working directory to OwnClt Commands.",
-            run() {
-                console.log(`clt clt/add was called!`);
-            }
-        },
+export = <OwnCltCommandsObject>{
+    /**
+     * Link Command
+     * This commands links the current working directory to ownclt commands.
+     * @param args - Args received!
+     * @param log - Log Functions
+     */
+    link: ({ log }) => {
+        log.info(`clt clt/link was called!`);
+    },
 
-        unlink: {
-            desc: "Unlink working directory from OwnClt Commands.",
-            run() {
-                console.log(`clt clt/unlink was called!`);
-            }
-        }
+    /**
+     * UnLink Command
+     * This commands links the current working directory to ownclt commands.
+     * @param args - Args received!
+     * @param log - Log Functions
+     */
+    unlink: ({ log }) => {
+        log.info(`clt clt/unlink was called!`);
     }
 };

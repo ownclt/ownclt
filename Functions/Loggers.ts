@@ -4,47 +4,47 @@ export function log(...args: any[]) {
     console.log(...args);
 }
 
-export function logAndExit(...args: any[]) {
+export function andExit(...args: any[]) {
     log(...args);
     process.exit();
 }
 
-export function logSuccess(message: any, error?: Error) {
+export function success(message: any, error?: Error) {
     log(greenBright("✔✔️"), greenBright(message));
     if (error) console.log(error.stack);
 }
 
-export function logSuccessAndExit(message: any, error?: any) {
-    logSuccess(message, error);
+export function successAndExit(message: any, error?: any) {
+    success(message, error);
     process.exit();
 }
 
-export function logInfo(message: any, error?: Error) {
+export function info(message: any, error?: Error) {
     log(blueBright("🗣"), blueBright(message));
     if (error) console.log(error.stack);
 }
 
-export function logInfoAndExit(message: any, error?: any) {
-    logInfo(message, error);
+export function infoAndExit(message: any, error?: any) {
+    info(message, error);
     process.exit();
 }
 
-export function logError(message: any, error?: Error) {
+export function error(message: any, error?: Error) {
     log(red("🚫"), red(message));
     if (error) console.log(error.stack);
 }
 
-export function logErrorAndExit(message: any, error?: any) {
-    logError(message, error);
+export function errorAndExit(message: any, error?: any) {
+    error(message, error);
     process.exit();
 }
 
-export function logWarning(message: any, error?: Error) {
+export function warning(message: any, error?: Error) {
     log(yellow("!!"), yellow(message));
     if (error) console.log(error.stack);
 }
 
-export function logWarningAndExit(message: any, error?: any) {
-    logWarning(message, error);
+export function warningAndExit(message: any, error?: any) {
+    warning(message, error);
     process.exit();
 }

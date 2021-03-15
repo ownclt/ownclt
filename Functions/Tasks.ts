@@ -1,7 +1,10 @@
 import OwnClt from "../Classes/OwnClt";
 import fs = require("fs");
-import { logErrorAndExit, logWarningAndExit } from "./Loggers";
+import * as log from "./Loggers";
+
 import FactoryDb from "../Factory/db";
+import * as Path from "path";
+import { OwnCltCommandsObject } from "../Types/Custom";
 
 export function loadDbToCollection(self: OwnClt, path?: string) {
     const cltDatabase = path ? path : self.ownCltPath(".ownclt/db.json");
@@ -36,7 +39,7 @@ export function installedOrInstall(self: OwnClt) {
         try {
             fs.mkdirSync(cltFolder);
         } catch (e) {
-            return logErrorAndExit(`Failed to create {.ownclt} folder in ${cltFolder}`, e);
+            return log.errorAndExit(`Failed to create {.ownclt} folder in ${cltFolder}`, e);
         }
     }
 
@@ -46,7 +49,7 @@ export function installedOrInstall(self: OwnClt) {
         try {
             fs.writeFileSync(cltDatabase, JSON.stringify(factoryDb, null, 2));
         } catch (e) {
-            return logErrorAndExit(`Failed to create {db.json} folder in ${cltFolder}`, e);
+            return log.errorAndExit(`Failed to create {db.json} folder in ${cltFolder}`, e);
         }
     }
 
@@ -72,17 +75,55 @@ export function processCliQuery(self: OwnClt) {
     const commandHandler = commands.get(namespace);
 
     if (!commandHandler) {
-        return logWarningAndExit(`Command "${command}" does not exists.`);
+        return log.warningAndExit(`Command "${command}" does not exists.`);
     }
 
-    const handler = loadCommandHandler(self);
-    console.log(handler);
+    /**
+     * Load Command Using data above.
+     */
+    loadCommandHandler(self, {
+        args,
+        command,
+        subCommands,
+        commandHandler
+    });
 }
 
 /**
  * Loads the Handler file of a command
  * @param self
+ * @param data
  */
-export function loadCommandHandler(self: OwnClt) {
-    return {};
+export function loadCommandHandler(
+    self: OwnClt,
+    data: {
+        args: string[];
+        command: string;
+        subCommands: string[];
+        commandHandler: string;
+    }
+) {
+    const { commandHandler, subCommands } = data;
+
+    let handlerData: OwnCltCommandsObject = {};
+
+    try {
+        handlerData = require(Path.resolve(commandHandler));
+    } catch (err) {
+        return log.errorAndExit(err.message, err.stack);
+    }
+
+    if (typeof handlerData === "object") {
+        /**
+         * Check if subcommand function exists
+         */
+        if (subCommands.length === 1 && typeof handlerData[subCommands[0]] === "function") {
+            // Run handlers function
+            handlerData[subCommands[0]]({
+                args: data.args,
+                command: data.command,
+                log
+            });
+        }
+    }
 }

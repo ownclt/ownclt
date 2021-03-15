@@ -1,0 +1,12 @@
+{
+  "namespace": "clt",
+  "file": "./clt.js",
+  "commands": {
+    "link": {
+      "desc": "Link working directory to OwnClt Commands."
+    },
+    "unlink": {
+      "desc": "Unlink working directory from OwnClt Commands."
+    }
+  }
+}
