@@ -14,7 +14,7 @@
   "scripts": {
     "ts:watch": "tsc --watch",
     "ts:build": "tsc",
-    "dev": "nodemon ./build/main.js clt/link"
+    "dev": "nodemon ./build/main.js ts/prepare build"
   },
   "devDependencies": {
     "@types/node": "^14.14.34",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
-    "object-collection": "^1.0.31",
+    "object-collection": "^1.0.32",
     "ora": "^5.3.0"
   }
 }

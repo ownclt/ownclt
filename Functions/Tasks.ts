@@ -4,7 +4,9 @@ import * as log from "./Loggers";
 
 import FactoryDb from "../Factory/db";
 import * as Path from "path";
-import { OwnCltCommandsObject } from "../Types/Custom";
+import { OwnCltCommandFnContext, OwnCltCommandsObject } from "../Types/Custom";
+import ObjectCollection from "object-collection";
+import OwnCltState from "../Classes/OwnCltState";
 
 export function loadDbToCollection(self: OwnClt, path?: string) {
     const cltDatabase = path ? path : self.ownCltPath(".ownclt/db.json");
@@ -117,11 +119,33 @@ export function loadCommandHandler(self: OwnClt) {
          */
         if (subCommands.length === 1 && typeof handlerData[subCommands[0]] === "function") {
             // Run handlers function
-            handlerData[subCommands[0]]({
+            const fn = handlerData[subCommands[0]];
+
+            const data = {
                 args: self.query.args,
                 command: self.query.command,
-                log
-            });
+                state: new OwnCltState(),
+                log,
+                paths: { pwd: process.cwd() },
+                self: undefined as any,
+                fromSelf: false
+            };
+
+            data.self = function (name: string, args: any = []) {
+                if (!handlerData.hasOwnProperty(name)) {
+                    return log.errorAndExit(`No subCommand defined in self!`);
+                }
+                const thisFn = handlerData[name];
+                return thisFn(
+                    new ObjectCollection(data)
+                        .cloneThis()
+                        .unset("args")
+                        .set({ args, fromSelf: true })
+                        .all()
+                );
+            };
+
+            fn(data);
         }
     }
 }

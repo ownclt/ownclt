@@ -34,8 +34,8 @@ export function error(message: any, error?: Error) {
     if (error) console.log(error.stack);
 }
 
-export function errorAndExit(message: any, error?: any) {
-    error(message, error);
+export function errorAndExit(message: any, e?: any) {
+    error(message, e);
     process.exit();
 }
 
@@ -47,4 +47,8 @@ export function warning(message: any, error?: Error) {
 export function warningAndExit(message: any, error?: any) {
     warning(message, error);
     process.exit();
+}
+
+export function emptyLine() {
+    console.log();
 }
