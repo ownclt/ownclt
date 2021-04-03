@@ -137,7 +137,7 @@ export = <OwnCltCommandsObject>{
                 return log.errorAndExit(stdout);
             }
 
-            return log.success("Publish completed");
+            return log.success("Package published to npm successfully");
         });
     }
 };
