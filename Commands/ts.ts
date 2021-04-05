@@ -7,9 +7,12 @@ export = <OwnCltCommandsObject>{
     /**
      * runSubCommand
      */
-    all: ({ self, state }) => {
+    all: ({ self, state, args: [distFolder] }) => {
         // Set "ci" to true;
-        state.set("ci", true);
+        state.set({
+            ci: true,
+            distFolder
+        });
 
         // Run tsc
         self("tsc");
@@ -67,7 +70,7 @@ export = <OwnCltCommandsObject>{
     }) => {
         const base = paths.pwd;
         const packageDotJson = `${base}/package.json`;
-        const distFolder = args[0] || "dist";
+        const distFolder = args[0] || state.get("distFolder", "dist");
         const distFolderPath = `${base}/${distFolder}`;
         const readme = `${base}/readme.md`;
 
@@ -119,8 +122,9 @@ export = <OwnCltCommandsObject>{
             .catch((e) => log.errorAndExit(e));
     },
 
-    publish: ({ paths, log, state }) => {
-        const Process = spawn("npm", ["publish", "dist"], { cwd: paths.pwd });
+    publish: ({ paths, log, state, args }) => {
+        const distFolder = args[0] || state.get("distFolder", "dist");
+        const Process = spawn("npm", ["publish", distFolder], { cwd: paths.pwd });
 
         let stdout = "";
 
