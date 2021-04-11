@@ -5,6 +5,6 @@ export = () => ({
     commands: {
         clt: Path.resolve(__dirname, "../Commands/clt.js"),
         ts: Path.resolve(__dirname, "../Commands/ts.js"),
-        fix: Path.resolve(__dirname, "../Commands/fix.js")
+        docker: Path.resolve(__dirname, "../Commands/docker.js")
     }
 });
