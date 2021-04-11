@@ -123,7 +123,9 @@ export = <OwnCltCommandsObject>{
     },
 
     publish: ({ paths, log, state, args }) => {
-        const distFolder = args[0] || state.get("distFolder", "dist");
+        const distFolder = args[0] || state.get("distFolder", "./");
+        const spinner = ora(`Publishing folder: ${distFolder}`).start();
+
         const Process = spawn("npm", ["publish", distFolder], { cwd: paths.pwd });
 
         let stdout = "";
@@ -138,10 +140,11 @@ export = <OwnCltCommandsObject>{
 
         Process.on("exit", (code) => {
             if (code !== 0) {
+                spinner.clear();
                 return log.errorAndExit(stdout);
             }
 
-            return log.success("Package published to npm successfully");
+            return spinner.succeed("Package published to npm successfully").stop();
         });
     }
 };
