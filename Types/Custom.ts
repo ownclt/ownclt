@@ -1,5 +1,4 @@
 import * as loggers from "../Functions/Loggers";
-import ObjectCollection from "object-collection";
 import OwnCltState from "../Classes/OwnCltState";
 
 export interface OwnCltConfig {

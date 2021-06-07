@@ -7,12 +7,13 @@ import { OwnCltConfig } from "../Types/Custom";
 import Path = require("path");
 import { installedOrInstall, loadCommandHandler, processCliQuery } from "../Functions/Tasks";
 import OwnCltDatabase from "./OwnCltDatabase";
+import { Obj } from "object-collection/exports";
 
 class OwnClt {
     // Config Data
     config: OwnCltConfig;
-    // Cache Holder
-    #cache: Record<string, any> = {};
+    // Cache Holder as ObjectCollection
+    #cache = Obj({});
 
     // Db Data Accessor
     db: OwnCltDatabase;
@@ -60,40 +61,9 @@ class OwnClt {
     ownCltPath(path?: string) {
         const key = "ownCltPath";
         // Set to cache
-        if (!this.hasCache(key)) this.setCache(key, Path.dirname(this.config.caller));
+        if (!this.#cache.has(key)) this.#cache.set(key, Path.dirname(this.config.caller));
         // get from cache
-        return path
-            ? Path.resolve(this.getCache<string>(key) + "/" + path)
-            : this.getCache<string>(key);
-    }
-
-    /**
-     * Cache
-     * Hold data in memory for reference later.
-     * @param key
-     * @param value
-     */
-    setCache<T>(key: string, value: T) {
-        this.#cache[key] = value;
-        return this;
-    }
-
-    /**
-     * Check if key exists in cache
-     * @param key
-     */
-    hasCache(key: string) {
-        return this.#cache.hasOwnProperty(key);
-    }
-
-    /**
-     * Get Data from cache
-     * @param key
-     * @param def
-     */
-    getCache<T>(key: string, def?: T): T {
-        if (!this.hasCache(key)) return def as T;
-        return this.#cache[key];
+        return path ? Path.resolve(this.#cache.get(key) + "/" + path) : this.#cache.get(key);
     }
 }
 

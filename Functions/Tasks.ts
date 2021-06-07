@@ -1,13 +1,19 @@
 import OwnClt from "../Classes/OwnClt";
 import fs = require("fs");
+import Path = require("path");
 import * as log from "./Loggers";
 
 import FactoryDb from "../Factory/db";
-import * as Path from "path";
-import { OwnCltCommandFnContext, OwnCltCommandsObject } from "../Types/Custom";
+import { OwnCltCommandsObject } from "../Types/Custom";
 import ObjectCollection from "object-collection";
 import OwnCltState from "../Classes/OwnCltState";
+import { Obj } from "object-collection/exports";
 
+/**
+ * Loads the content of the database file as a collection.
+ * @param self - Ownclt Instance
+ * @param path - Custom Path to db.json
+ */
 export function loadDbToCollection(self: OwnClt, path?: string) {
     const cltDatabase = path ? path : self.ownCltPath(".ownclt/db.json");
     // Load db.json
@@ -17,7 +23,7 @@ export function loadDbToCollection(self: OwnClt, path?: string) {
 /**
  * This functions checks for .ownclt folder and database files.
  * if they don't exists, it tries creating them.
- * @param self
+ * @param self - Ownclt Instance
  */
 export function installedOrInstall(self: OwnClt) {
     const cltFolder = self.ownCltPath(".ownclt");
@@ -45,7 +51,7 @@ export function installedOrInstall(self: OwnClt) {
         }
     }
 
-    // If no Clt folder
+    // If no Clt Database
     if (!hasCltDb) {
         const factoryDb = FactoryDb();
         try {
@@ -95,15 +101,18 @@ export function processCliQuery(self: OwnClt) {
 /**
  * Loads the Handler file of a command
  * @param self
- * @param data
  */
 export function loadCommandHandler(self: OwnClt) {
+    // Throw error if instance has no query
     if (!self.query) {
         throw new Error(
             `No query in ownclt instance, call processCliQuery() first before loadCommandHandler()`
         );
     }
-    const { commandHandler, subCommands } = self.query;
+
+    console.log("Query:", self.query);
+
+    const { commandHandler, subCommands, command } = self.query;
 
     let handlerData: OwnCltCommandsObject = {};
 
@@ -114,13 +123,27 @@ export function loadCommandHandler(self: OwnClt) {
     }
 
     if (typeof handlerData === "object") {
+        // if has subcommands
+        if (!subCommands.length) {
+            return log.errorAndExit(`Command "${command}" is incomplete, requires subCommands.`);
+        }
+
+        /**
+         * check if first subcommand exists.
+         */
+        const firstSubCommand = subCommands[0];
+        if (!handlerData.hasOwnProperty(firstSubCommand)) {
+            return log.warningAndExit(`Command "${command}" does not exists.`);
+        }
+
         /**
          * Check if subcommand function exists
          */
-        if (subCommands.length === 1 && typeof handlerData[subCommands[0]] === "function") {
-            // Run handlers function
+        if (subCommands.length === 1 && typeof handlerData[firstSubCommand] === "function") {
+            // Store command handler function
             const fn = handlerData[subCommands[0]];
 
+            // Make Command Handler Context Data
             const data = {
                 args: self.query.args,
                 command: self.query.command,
@@ -131,21 +154,20 @@ export function loadCommandHandler(self: OwnClt) {
                 fromSelf: false
             };
 
+            // Setup self function.
             data.self = function (name: string, args: any = []) {
                 if (!handlerData.hasOwnProperty(name)) {
-                    return log.errorAndExit(`No subCommand defined in self!`);
+                    return log.errorAndExit(`No subCommand named "${name}" is defined in self!`);
                 }
+
                 const thisFn = handlerData[name];
+
                 return thisFn(
-                    new ObjectCollection(data)
-                        .cloneThis()
-                        .unset("args")
-                        .set({ args, fromSelf: true })
-                        .all()
+                    Obj(data).cloneThis().unset("args").set({ args, fromSelf: true }).all()
                 );
             };
 
-            fn(data);
+            return fn(data);
         }
     }
 }
