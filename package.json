@@ -14,7 +14,7 @@
   "scripts": {
     "ts:watch": "tsc --watch",
     "ts:build": "tsc",
-    "dev": "nodemon ./build/main.js ts/goat/cow dog cat"
+    "dev": "nodemon ./build/main.js clt/link tests"
   },
   "devDependencies": {
     "@types/node": "^14.14.34",

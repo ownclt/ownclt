@@ -4,8 +4,7 @@ import Path = require("path");
 import * as log from "./Loggers";
 
 import FactoryDb from "../Factory/db";
-import { OwnCltCommandsObject } from "../Types/Custom";
-import ObjectCollection from "object-collection";
+import { OwnCltCommandFnContext, OwnCltCommandsObject } from "../Types/Custom";
 import OwnCltState from "../Classes/OwnCltState";
 import { Obj } from "object-collection/exports";
 
@@ -102,7 +101,7 @@ export function processCliQuery(self: OwnClt) {
  * Loads the Handler file of a command
  * @param self
  */
-export function loadCommandHandler(self: OwnClt) {
+export async function loadCommandHandler(self: OwnClt) {
     // Throw error if instance has no query
     if (!self.query) {
         throw new Error(
@@ -110,8 +109,10 @@ export function loadCommandHandler(self: OwnClt) {
         );
     }
 
-    console.log("Query:", self.query);
+    // Current Working Directory
+    const cwd = process.cwd();
 
+    // Destruct the needful
     const { commandHandler, subCommands, command } = self.query;
 
     let handlerData: OwnCltCommandsObject = {};
@@ -144,14 +145,20 @@ export function loadCommandHandler(self: OwnClt) {
             const fn = handlerData[subCommands[0]];
 
             // Make Command Handler Context Data
-            const data = {
+            const data: OwnCltCommandFnContext = {
                 args: self.query.args,
                 command: self.query.command,
                 state: new OwnCltState(),
                 log,
-                paths: { pwd: process.cwd() },
+                paths: {
+                    cwd,
+                    cwdResolve: (value) => {
+                        return value ? Path.resolve(cwd, value) : cwd;
+                    }
+                },
                 self: undefined as any,
-                fromSelf: false
+                fromSelf: false,
+                ownclt: self
             };
 
             // Setup self function.
@@ -167,7 +174,7 @@ export function loadCommandHandler(self: OwnClt) {
                 );
             };
 
-            return fn(data);
+            return await fn(data);
         }
     }
 }

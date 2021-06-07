@@ -21,7 +21,7 @@ export = <OwnCltCommandsObject>{
     tsc: ({ paths, log, self, state }) => {
         // Start Spinner
         const spinner = ora(`Building typescript files...`).start();
-        const Process = spawn("tsc", { cwd: paths.pwd });
+        const Process = spawn("tsc", { cwd: paths.cwd });
 
         let stdout = "";
 
@@ -68,7 +68,7 @@ export = <OwnCltCommandsObject>{
         state,
         self
     }) => {
-        const base = paths.pwd;
+        const base = paths.cwd;
         const packageDotJson = `${base}/package.json`;
         const distFolder = args[0] || state.get("distFolder", "dist");
         const distFolderPath = `${base}/${distFolder}`;
@@ -126,7 +126,7 @@ export = <OwnCltCommandsObject>{
         const distFolder = args[0] || state.get("distFolder", "./");
         const spinner = ora(`Publishing folder: ${distFolder}`).start();
 
-        const Process = spawn("npm", ["publish", distFolder], { cwd: paths.pwd });
+        const Process = spawn("npm", ["publish", distFolder], { cwd: paths.cwd });
 
         let stdout = "";
 

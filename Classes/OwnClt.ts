@@ -6,10 +6,12 @@
 import { OwnCltConfig } from "../Types/Custom";
 import Path = require("path");
 import { installedOrInstall, loadCommandHandler, processCliQuery } from "../Functions/Tasks";
-import OwnCltDatabase from "./OwnCltDatabase";
+import OwnCltDatabase = require("./OwnCltDatabase");
 import { Obj } from "object-collection/exports";
 
 class OwnClt {
+    // started
+    #started: boolean = false;
     // Config Data
     config: OwnCltConfig;
     // Cache Holder as ObjectCollection
@@ -17,8 +19,6 @@ class OwnClt {
 
     // Db Data Accessor
     db: OwnCltDatabase;
-    // Db Data Holder
-    readonly #db: Record<string, any> = {};
 
     // Query Holder
     query?: { command: string; args: string[]; subCommands: string[]; commandHandler: string };
@@ -31,7 +31,11 @@ class OwnClt {
         this.config = config;
 
         // Open Db Collection
-        this.db = new OwnCltDatabase(this.#db);
+        const dbPath = this.ownCltPath(".ownclt/db.json");
+        this.db = new OwnCltDatabase(dbPath);
+
+        // Set Db Path
+        this.#cache.set("paths", { db: dbPath });
     }
 
     /**
@@ -39,6 +43,11 @@ class OwnClt {
      * It starts processing all the data stored in the OwnClt instance it belongs to
      */
     async start() {
+        if (this.#started) return this;
+
+        // Set Started to true
+        this.#started = true;
+
         /**
          * Check if ownclt has been installed, if Yes, skip installation process.
          */
@@ -52,7 +61,9 @@ class OwnClt {
         /**
          * Load Processed Command
          */
-        loadCommandHandler(this);
+        await loadCommandHandler(this);
+
+        return this;
     }
 
     /**
@@ -65,6 +76,12 @@ class OwnClt {
         // get from cache
         return path ? Path.resolve(this.#cache.get(key) + "/" + path) : this.#cache.get(key);
     }
+
+    getCache<T = any>(key: string, def?: T): T {
+        return this.#cache.get(key, def) as T;
+    }
+
+    // getDb(){}
 }
 
 export = OwnClt;

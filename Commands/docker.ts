@@ -5,16 +5,16 @@ import fs from "fs";
 export = <OwnCltCommandsObject>{
     /**
      * FixMongoEnv
-     * This commands replaces all local path in env to a docker supported url.
+     * This commands replaces all local path in env to docker supported url.
      * @param args - Args received!
      * @param log - Log Functions
      * @param paths
      */
     fixMongoEnv: ({ log, paths }: OwnCltCommandFnContext) => {
-        const currentEnv = path.resolve(`${paths.pwd}/.env`);
+        const currentEnv = path.resolve(`${paths.cwd}/.env`);
 
         if (!fs.existsSync(currentEnv)) {
-            return log.errorAndExit(`No env found in working directory! ${paths.pwd}`);
+            return log.errorAndExit(`No env found in working directory! ${paths.cwd}`);
         }
 
         const env = fs.readFileSync(currentEnv).toString();
