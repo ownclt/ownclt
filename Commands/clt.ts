@@ -1,15 +1,16 @@
 import { OwnCltCommandFnContext, OwnCltCommandsObject, OwnCltMapFile } from "../Types/Custom";
 import fs = require("fs");
 import path = require("path");
+import { defineCommands } from "../Functions/Helpers";
 
-export = <OwnCltCommandsObject>{
+export = defineCommands({
     /**
      * Link Command
      * This commands links the current working directory to ownclt commands.
      * @param args - Args received!
      * @param log - Log Functions
      */
-    link: ({ args: [folder], log, command, ownclt }: OwnCltCommandFnContext<string[]>) => {
+    link: ({ args: [folder], log, command, ownclt }) => {
         // Exit if no folder
         if (!folder) return log.errorAndExit(`${command}: Folder is required!`);
 
@@ -54,7 +55,8 @@ export = <OwnCltCommandsObject>{
         // Save db
         db.save();
 
-        console.log(db);
+        // Log
+        log.successAndExit(`Command: "${map.namespace}" added to ownclt commands`);
     },
 
     /**
@@ -63,7 +65,10 @@ export = <OwnCltCommandsObject>{
      * @param args - Args received!
      * @param log - Log Functions
      */
-    unlink: ({ log, command }) => {
-        log.info(`${command} was called!`);
+    unlink: ({ log, ownclt, command, args: [namespace] }: OwnCltCommandFnContext) => {
+        // check if namespace exists
+        if (!ownclt.db.has(`commands.${namespace}`)) {
+            return log.errorAndExit(`${command}: Namespace "${namespace}" already exists.`);
+        }
     }
-};
+});
