@@ -14,7 +14,7 @@
   "scripts": {
     "ts:watch": "tsc --watch",
     "ts:build": "tsc",
-    "dev": "nodemon ./build/main.js clt/link tests"
+    "test": "nodemon ./build/main.js /unlink/folder tests"
   },
   "devDependencies": {
     "@types/node": "^14.14.34",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "chalk": "^4.1.0",
+    "jsonpointer": "^4.1.0",
     "object-collection": "^1.0.32",
     "ora": "^5.3.0"
   }

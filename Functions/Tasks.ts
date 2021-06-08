@@ -1,10 +1,11 @@
 import OwnClt from "../Classes/OwnClt";
 import fs = require("fs");
 import Path = require("path");
+import jsonpointer = require("jsonpointer");
 import * as log from "./Loggers";
 
 import FactoryDb from "../Factory/db";
-import { OwnCltCommandFnContext, OwnCltCommandsObject } from "../Types/Custom";
+import { OwnCltCommandFn, OwnCltCommandFnContext, OwnCltCommandsObject } from "../Types/Custom";
 import OwnCltState from "../Classes/OwnCltState";
 import { Obj } from "object-collection/exports";
 
@@ -115,15 +116,15 @@ export async function loadCommandHandler(self: OwnClt) {
     // Destruct the needful
     const { commandHandler, subCommands, command } = self.query;
 
-    let handlerData: OwnCltCommandsObject = {};
+    let Commands: OwnCltCommandsObject = {};
 
     try {
-        handlerData = require(Path.resolve(commandHandler));
+        Commands = require(Path.resolve(commandHandler));
     } catch (err) {
         return log.errorAndExit(err.message, err.stack);
     }
 
-    if (typeof handlerData === "object") {
+    if (typeof Commands === "object") {
         // if has subcommands
         if (!subCommands.length) {
             return log.errorAndExit(`Command "${command}" is incomplete, requires subCommands.`);
@@ -132,49 +133,82 @@ export async function loadCommandHandler(self: OwnClt) {
         /**
          * check if first subcommand exists.
          */
-        const firstSubCommand = subCommands[0];
-        if (!handlerData.hasOwnProperty(firstSubCommand)) {
+        const mainSubCommandKey = subCommands[0];
+        if (!Commands.hasOwnProperty(mainSubCommandKey)) {
             return log.warningAndExit(`Command "${command}" does not exists.`);
         }
 
+        let mainSubCommand = Commands[mainSubCommandKey];
+
         /**
-         * Check if subcommand function exists
+         * Check if mainSubCommand has subcommands
          */
-        if (subCommands.length === 1 && typeof handlerData[firstSubCommand] === "function") {
-            // Store command handler function
-            const fn = handlerData[subCommands[0]];
+        if (typeof mainSubCommand === "object") {
+            try {
+                let findSubCommand = jsonpointer.get(Commands, "/" + subCommands.join("/"));
 
-            // Make Command Handler Context Data
-            const data: OwnCltCommandFnContext = {
-                args: self.query.args,
-                command: self.query.command,
-                state: new OwnCltState(),
-                log,
-                paths: {
-                    cwd,
-                    cwdResolve: (value) => {
-                        return value ? Path.resolve(cwd, value) : cwd;
+                if (!findSubCommand) {
+                    return log.warningAndExit(`Command "${command}" does not exists.`);
+                } else if (findSubCommand && typeof findSubCommand !== "function") {
+                    const lastSubCommand = subCommands[subCommands.length - 1];
+                    // check if object
+                    if (
+                        typeof findSubCommand === "object" &&
+                        findSubCommand.hasOwnProperty(lastSubCommand)
+                    ) {
+                        const defaultSubCommand = findSubCommand[lastSubCommand];
+
+                        if (typeof defaultSubCommand !== "function") {
+                            return log.errorAndExit(
+                                `Default command handler for "${command}" must be a function`
+                            );
+                        }
+
+                        findSubCommand = defaultSubCommand;
                     }
-                },
-                self: undefined as any,
-                fromSelf: false,
-                ownclt: self
-            };
-
-            // Setup self function.
-            data.self = function (name: string, args: any = []) {
-                if (!handlerData.hasOwnProperty(name)) {
-                    return log.errorAndExit(`No subCommand named "${name}" is defined in self!`);
                 }
-
-                const thisFn = handlerData[name];
-
-                return thisFn(
-                    Obj(data).cloneThis().unset("args").set({ args, fromSelf: true }).all()
-                );
-            };
-
-            return await fn(data);
+                mainSubCommand = findSubCommand;
+            } catch (e) {
+                return log.errorAndExit(`Error finding command "${command}"`, e);
+            }
         }
+
+        if (typeof mainSubCommand !== "function")
+            return log.errorAndExit(`command "${command}" is not callable!`);
+
+        // Make Command Handler Context Data
+        const data: OwnCltCommandFnContext = {
+            args: self.query.args,
+            command: self.query.command,
+            subCommands: self.query.subCommands,
+            state: new OwnCltState(),
+            log,
+            paths: {
+                cwd,
+                cwdResolve: (value) => {
+                    return value ? Path.resolve(cwd, value) : cwd;
+                }
+            },
+            self: undefined as any,
+            fromSelf: false,
+            ownclt: self
+        };
+
+        // Setup self function.
+        data.self = function (name: string, args: any = []) {
+            if (!Commands.hasOwnProperty(name)) {
+                return log.errorAndExit(`No subCommand named "${name}" is defined in self!`);
+            }
+
+            const thisFn = Commands[name];
+
+            if (typeof thisFn !== "function") {
+                return log.errorAndExit(`Self "${name}" is not callable!`);
+            }
+
+            return thisFn(Obj(data).cloneThis().unset("args").set({ args, fromSelf: true }).all());
+        };
+
+        return (mainSubCommand as OwnCltCommandFn)(data);
     }
 }

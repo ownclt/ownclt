@@ -27,6 +27,14 @@ class OwnClt {
         // Trim command
         config.command = config.command.trim();
 
+        /**
+         * Convert "/" to "clt/"
+         * if command starts with a "/"
+         */
+        if (config.command[0] === "/") {
+            config.command = "clt/" + config.command.substr(1);
+        }
+
         // Set Config
         this.config = config;
 

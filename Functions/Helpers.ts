@@ -1,5 +1,9 @@
-import { OwnCltCommandsObject } from "../Types/Custom";
+import { OwnCltCommandFn, OwnCltCommandsObject } from "../Types/Custom";
 
-export function defineCommands<Args = any[]>(commands: OwnCltCommandsObject<Args>) {
+export function defineCommands(commands: OwnCltCommandsObject) {
     return commands;
+}
+
+export function defineCommand(command: OwnCltCommandFn) {
+    return command;
 }

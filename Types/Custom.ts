@@ -9,9 +9,10 @@ export interface OwnCltConfig {
 }
 
 export type OwnCltLoggers = typeof loggers;
-export type OwnCltCommandFnContext<Args = any[]> = {
-    args: Args;
+export type OwnCltCommandFnContext = {
+    args: string[];
     command: string;
+    subCommands: string[];
     log: OwnCltLoggers;
     paths: { cwd: string; cwdResolve: (path?: string) => string };
     state: OwnCltState;
@@ -26,5 +27,5 @@ export type OwnCltMapFile = {
     commands: Record<string, { desc: string }>;
 };
 
-export type OwnCltCommandFn<Args = any[]> = (ctx: OwnCltCommandFnContext<Args>) => any;
-export type OwnCltCommandsObject<Args = any[]> = Record<string, OwnCltCommandFn<Args>>;
+export type OwnCltCommandFn = (ctx: OwnCltCommandFnContext) => any;
+export type OwnCltCommandsObject = { [key: string]: OwnCltCommandFn | OwnCltCommandsObject };
