@@ -16,7 +16,7 @@ export type OwnCltCommandFnContext = {
     log: OwnCltLoggers;
     paths: { cwd: string; cwdResolve: (path?: string) => string };
     state: OwnCltState;
-    self: (name: string, args?: any[]) => any;
+    self: (name: string, args?: any | any[]) => any;
     fromSelf: boolean;
     ownclt: OwnClt;
 };

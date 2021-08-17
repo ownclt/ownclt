@@ -1,4 +1,4 @@
-import { OwnCltCommandFnContext, OwnCltMapFile } from "../Types/Custom";
+import { OwnCltMapFile } from "../Types/Custom";
 import fs = require("fs");
 import path = require("path");
 import { defineCommands } from "../Functions/Helpers";
@@ -11,7 +11,7 @@ export = defineCommands({
      * @param args - Args received!
      * @param log - Log Functions
      */
-    link({ command, ownclt, args: [folder, as] }) {
+    link({ command, ownclt, state, args: [folder, as] }) {
         // Exit if no folder
         if (!folder) return errorAndExit(`${command}: Folder is required!`);
 
@@ -40,12 +40,18 @@ export = defineCommands({
         if (!fs.existsSync(map.file))
             return errorAndExit(`${command}: OwnClt Command file: '${map.file}" does not exists.`);
 
+        // Return map file
+        if (state.has("readMapFileOnly")) {
+            state.set("mapFile", map);
+            return;
+        }
+
         // get ownCliPath
         const db = ownclt.db;
         const namespace = (as ? as : map.namespace).trim().toLowerCase();
 
         // check if namespace exists
-        if (db.has(`commands.${map.namespace}`)) {
+        if (db.has(`commands.${namespace}`)) {
             return errorAndExit(`${command}: Namespace "${namespace}" already exists.`);
         }
 
@@ -86,7 +92,6 @@ export = defineCommands({
             if (!ownclt.db.has(`commands.${namespace}`)) {
                 return errorAndExit(`Namespace "${namespace}" is not linked.`);
             }
-
             // unset command
             ownclt.db.unset(`commands.${namespace}`);
 
@@ -96,14 +101,29 @@ export = defineCommands({
             return successAndExit(`Command Unlinked: "${namespace}"`);
         },
 
-        folder({ ownclt }) {
-            // console.log(ownclt);
-        }
-    },
+        folder({ ownclt, state, self, command, args: [folder] }) {
+            // Exit if no folder
+            if (!folder) return errorAndExit(`${command}: Folder is required!`);
 
-    do: {
-        you({ subCommands }) {
-            console.log(subCommands);
+            // Set State to readMapFileOnly
+            state.set("readMapFileOnly", true);
+
+            // call link
+            self("link", folder);
+
+            // Get mapFile
+            const map: OwnCltMapFile = state.get("mapFile");
+
+            const findKeyByFile = ownclt.db.path("commands").pickBy((d: any) => {
+                return d === map.file;
+            });
+
+            console.log(findKeyByFile);
+            errorAndExit("stop");
+
+            if (!findKeyByFile) return errorAndExit(`Namespace "${map.namespace}" is not linked.`);
+
+            self("unlink/unlink", map.namespace);
         }
     }
 });

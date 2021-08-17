@@ -195,18 +195,32 @@ export async function loadCommandHandler(self: OwnClt) {
         };
 
         // Setup self function.
-        data.self = function (name: string, args: any = []) {
-            if (!Commands.hasOwnProperty(name)) {
-                return log.errorAndExit(`No subCommand named "${name}" is defined in self!`);
+        data.self = function (name: string, args: any | any[] = []) {
+            if (!Array.isArray(args)) args = [args];
+
+            let thisFn;
+
+            try {
+                thisFn = jsonpointer.get(Commands, "/" + name);
+            } catch (e) {
+                return log.errorAndExit(`Error finding command: "${command}" in self!`, e);
             }
 
-            const thisFn = Commands[name];
+            if (!thisFn) {
+                return log.errorAndExit(`No command named: "${name}" is defined in self!`);
+            }
 
             if (typeof thisFn !== "function") {
-                return log.errorAndExit(`Self "${name}" is not callable!`);
+                return log.errorAndExit(`Command: "${name}" is not callable in self!`);
             }
 
-            return thisFn(Obj(data).cloneThis().unset("args").set({ args, fromSelf: true }).all());
+            return thisFn(
+                Obj(data)
+                    .cloneThis()
+                    .unset("args")
+                    .set({ state: data.state, args, fromSelf: true })
+                    .all()
+            );
         };
 
         return (mainSubCommand as OwnCltCommandFn)(data);

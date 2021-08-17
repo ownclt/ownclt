@@ -123,10 +123,12 @@ export = <OwnCltCommandsObject>{
     },
 
     publish: ({ paths, log, state, args }) => {
-        const distFolder = args[0] || state.get("distFolder", "./");
+        let [distFolder, ...others] = args;
+        if (!distFolder) distFolder = state.get("distFolder", "./");
+
         const spinner = ora(`Publishing folder: ${distFolder}`).start();
 
-        const Process = spawn("npm", ["publish", distFolder], { cwd: paths.cwd });
+        const Process = spawn("npm", ["publish", distFolder, ...others], { cwd: paths.cwd });
 
         let stdout = "";
 
