@@ -2,9 +2,18 @@ import { OwnCltMapFile } from "../Types/Custom";
 import fs = require("fs");
 import path = require("path");
 import { defineCommands } from "../Functions/Helpers";
-import { errorAndExit, successAndExit, warningAndExit } from "../Functions/Loggers";
+import { errorAndExit, info, successAndExit, warningAndExit } from "../Functions/Loggers";
+import { exec } from "child_process";
 
 export = defineCommands({
+    webstorm() {
+        const command = ["open", "-na", '"WebStorm.app"', "--args", "./"].join(" ");
+
+        info(command);
+
+        exec(command);
+    },
+
     /**
      * Link Command
      * This command links the current working directory to ownclt commands.
